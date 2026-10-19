@@ -29,6 +29,10 @@ dependencies = [
 universal = true
 
 [project.optional-dependencies]
+llm = [
+    "openai>=1.66", # Responses API
+    "pandas",
+]
 dev = [
     "xgboost-cpu",
     "pytest",
@@ -44,6 +48,7 @@ dev = [
     "pre-commit",
     "scikit-learn",
     "pandas",
+    "openai>=1.66",
 ]
 
 [tool.ruff]
