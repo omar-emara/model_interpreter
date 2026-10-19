@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 # CSV file storing the predictions and later on used to create a html
 # to review results qualitatively.
-OUTPUT_FILE_NAME = "carclaims_llm_explanations_e2e_v2.csv"
+OUTPUT_FILE_NAME = "carclaims_llm_explanations_e2e.csv"
 
 # threhsold for detecting fraud
 THRESHOLD = 0.5
