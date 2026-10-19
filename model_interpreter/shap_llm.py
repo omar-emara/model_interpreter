@@ -40,14 +40,14 @@ logger = logging.getLogger(__name__)
 
 
 ####################### replace openAI config with internal config #######################
-MODEL: str = "gpt-5.6-luna"
+MODEL = "gpt-5.6-luna"
 
-MODEL_ENV_VAR: str = "MODEL_INTERPRETER_LLM_MODEL"
-API_KEY_ENV_VAR: str = "OPENAI_API_KEY"
+MODEL_ENV_VAR = "MODEL_INTERPRETER_LLM_MODEL"
+API_KEY_ENV_VAR = "OPENAI_API_KEY"
 
 ############################################################################################
 
-FRAUD_LABEL: int = 1
+FRAUD_LABEL = 1
 
 # the placeholder in the prompt saved in .txt file requires these values
 REQUIRED_PROMPT_PLACEHOLDERS: FrozenSet[str] = frozenset(
@@ -73,7 +73,7 @@ COLLINEAR_FEATURE_COLUMN_PATTERN = re.compile(r"^Collinear_Feature_(\d+)$")
 
 # required because the names returned from ColumnTransformer does not match the features names in
 # the csv
-TRANSFORMER_PREFIX_SEPARATOR: str = "__"
+TRANSFORMER_PREFIX_SEPARATOR = "__"
 
 
 def read_csv(path: Path, required_columns: FrozenSet[str], name: str) -> pd.DataFrame:
