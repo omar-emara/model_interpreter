@@ -15,8 +15,7 @@ Model feature names (e.g. ``num__Age``, one-hot ``cat__Make_Honda``) are
 mapped back to dataset feature names automatically, or explicitly via
 ``feature_name_mapping``.
 
-Requires OPENAI_API_KEY; OPENAI_BASE_URL and MODEL_INTERPRETER_LLM_MODEL
-are optional overrides.
+Requires OPENAI_API_KEY; OPENAI_BASE_URL is an optional override.
 """
 
 from __future__ import annotations
@@ -42,7 +41,6 @@ logger = logging.getLogger(__name__)
 ####################### replace openAI config with internal config #######################
 MODEL = "gpt-5.6-luna"
 
-MODEL_ENV_VAR = "MODEL_INTERPRETER_LLM_MODEL"
 API_KEY_ENV_VAR = "OPENAI_API_KEY"
 
 ############################################################################################
@@ -560,8 +558,7 @@ class ShapLLMExplainer:
         created with ``create_openai_client`` from environment variables.
 
     model: str, default = None
-        Model name. If None, the ``MODEL_INTERPRETER_LLM_MODEL``
-        environment variable is used, falling back to ``MODEL``.
+        Model name. If None, ``MODEL`` is used.
 
     top_n_shap: int, default = 10
         Number of SHAP factors included per claim, by absolute value.
@@ -615,7 +612,7 @@ class ShapLLMExplainer:
         self.feature_name_mapping = dict(feature_name_mapping or {})
         self.top_n_shap = top_n_shap
         self.client = client if client is not None else create_openai_client()
-        self.model = model or os.getenv(MODEL_ENV_VAR) or MODEL
+        self.model = model or MODEL
         self._warned_features: set = set()
 
     def dataset_shap_values(self, shap_values: Any) -> List[Tuple[str, float]]:

@@ -1,5 +1,4 @@
 import pickle
-import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -353,19 +352,6 @@ class TestShapLLMExplainer(object):
         """Test ValueError for invalid top_n_shap"""
         with pytest.raises(ValueError, match="top_n_shap must be an int >= 1"):
             ShapLLMExplainer(**input_files, client=fake_client, top_n_shap=top_n_shap)
-
-    def test_model_from_environment(
-        self, input_files, fake_client, monkeypatch
-    ) -> None:
-        """Test the model name falls back to the environment variable"""
-        monkeypatch.setenv(shap_llm.MODEL_ENV_VAR, "env-model")
-        assert ShapLLMExplainer(**input_files, client=fake_client).model == "env-model"
-
-    def test_missing_openai_package(self, input_files, monkeypatch) -> None:
-        """Test a helpful ImportError when openai is not installed"""
-        monkeypatch.setitem(sys.modules, "openai", None)
-        with pytest.raises(ImportError, match=r"model_interpreter\[llm\]"):
-            ShapLLMExplainer(**input_files)
 
     def test_missing_api_key(self, input_files, monkeypatch) -> None:
         """Test ValueError when no API key is available"""

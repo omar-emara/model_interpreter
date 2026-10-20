@@ -87,7 +87,6 @@ The client is configured from environment variables:
 | --- | --- |
 | `OPENAI_API_KEY` | API key (required unless you pass your own `client`) |
 | `OPENAI_BASE_URL` | Optional API endpoint, e.g. an internal gateway |
-| `MODEL_INTERPRETER_LLM_MODEL` | Optional model name, overriding the default |
 
 Create a `ShapLLMExplainer` once (e.g. at service start-up) from the dataset statistics, feature interactions and prompt template files, then pass the output of `transform` to `ModelInterpreter.explain_with_llm` for each prediction:
 

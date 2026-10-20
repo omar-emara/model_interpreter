@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 # CSV file storing the predictions and later on used to create a html
 # to review results qualitatively.
-OUTPUT_FILE_NAME = "carclaims_llm_explanations_e2e.csv"
+OUTPUT_FILE_NAME = "carclaims_llm_explanations_e2e_v4.csv"
 
 # threhsold for detecting fraud
 THRESHOLD = 0.5
@@ -62,8 +62,8 @@ def parse_args():
     parser.add_argument(
         "--n-samples",
         type=int,
-        default=5,
-        help="Number of claims predicted as fraud to explain (default: %(default)s).",
+        default=None,
+        help="Number of claims predicted as fraud to explain. If None, all samples predicted as fraud are explained",
     )
     parser.add_argument(
         "--top-n-shap",
@@ -74,7 +74,7 @@ def parse_args():
     parser.add_argument(
         "--model",
         default=None,
-        help="LLM model name (default: $MODEL_INTERPRETER_LLM_MODEL or shap_llm.MODEL).",
+        help="LLM model name (default: shap_llm.MODEL).",
     )
     parser.add_argument(
         "--dry-run",
