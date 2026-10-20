@@ -75,18 +75,7 @@ Which will then return output like:
 
 ## LLM explanations
 
-The `model_interpreter.shap_llm` module explains claims predicted as fraud in plain language using an LLM. For each flagged claim, the claim features, its top SHAP values and the prediction are combined with dataset statistics and feature interactions, rendered into a prompt template and sent to the OpenAI Responses API. Claims not predicted as fraud are never sent to the LLM.
-
-Install the optional LLM dependencies with:
-
-`pip install model_interpreter[llm]`
-
-The client is configured from environment variables:
-
-| Variable | Purpose |
-| --- | --- |
-| `OPENAI_API_KEY` | API key (required unless you pass your own `client`) |
-| `OPENAI_BASE_URL` | Optional API endpoint, e.g. an internal gateway |
+The `model_interpreter.shap_llm` module explains claims predicted as fraud in plain language using an LLM. For each flagged claim, the claim features, its top SHAP values and the prediction are combined with dataset statistics and feature interactions and rendered into a prompt template. Claims not predicted as fraud are never sent to the LLM.
 
 Create a `ShapLLMExplainer` once (e.g. at service start-up) from the dataset statistics, feature interactions and prompt template files, then pass the output of `transform` to `ModelInterpreter.explain_with_llm` for each prediction:
 
@@ -121,8 +110,6 @@ SHAP feature names are matched to the feature names in the dataset statistics an
 - any other names can be mapped with `ShapLLMExplainer(..., feature_name_mapping={"f0": "Age"})`.
 
 The prompt template is read from file and must contain the placeholders `{dataset_knowledge}`, `{feature_interactions}`, `{claim_data}`, `{prediction}`, `{shap_explanation}` and `{top_n_shap}`. `predicted_fraud` must be the predicted class (0 or 1), not a probability. Errors from the LLM client are raised to the caller. To use Azure OpenAI or another compatible client, pass it as `ShapLLMExplainer(..., client=...)`.
-
-> **Note:** claim features are sent to the LLM provider. Make sure this is permitted for your data.
 
 An end-to-end example that trains an XGBoost fraud model, fits a `ModelInterpreter` and explains the first claims predicted as fraud with `explain_with_llm` is in [examples/XGB/run_xgb_carclaims_llm.py](examples/XGB/run_xgb_carclaims_llm.py).
 
