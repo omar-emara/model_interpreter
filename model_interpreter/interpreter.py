@@ -1,10 +1,49 @@
 import shap  # type: ignore
 import logging
+from importlib.metadata import entry_points
 import numpy as np  # type: ignore
 import pandas as pd
 from shap.utils._exceptions import InvalidModelError
 
 from model_interpreter._version import __version__
+
+# Entry point group that installed packages use to provide the default LLM
+# explainer for ModelInterpreter.explain_with_llm, e.g. in pyproject.toml:
+#
+#   [project.entry-points."model_interpreter.llm_explainers"]
+#   default = "my_package:get_explainer"
+#
+# where get_explainer() takes no arguments and returns an explainer object.
+LLM_EXPLAINER_ENTRY_POINT_GROUP = "model_interpreter.llm_explainers"
+LLM_EXPLAINER_ENTRY_POINT_NAME = "default"
+
+
+def _default_llm_explainer():
+    """
+    Load the default LLM explainer registered by an installed package.
+
+    Returns:
+    --------
+    the object returned by the factory registered as ``default`` under the
+    ``model_interpreter.llm_explainers`` entry point group
+
+    Raises:
+    -------
+    ImportError
+        if no installed package registers a default LLM explainer
+    """
+
+    found = entry_points(group=LLM_EXPLAINER_ENTRY_POINT_GROUP)
+
+    if LLM_EXPLAINER_ENTRY_POINT_NAME not in found.names:
+        raise ImportError(
+            "No LLM explainer is installed. Pass llm_explainer=... (any object "
+            "with an explain(claim_features, shap_values, predicted_fraud) "
+            "method), or install a package that registers one under the "
+            f"'{LLM_EXPLAINER_ENTRY_POINT_GROUP}' entry point group."
+        )
+
+    return found[LLM_EXPLAINER_ENTRY_POINT_NAME].load()()
 
 
 class ModelInterpreter:
@@ -797,3 +836,77 @@ class ModelInterpreter:
                 tups.append((k, v))
 
         return tups
+
+    def explain_with_llm(
+        self,
+        contributions,
+        claim_features,
+        predicted_fraud,
+        llm_explainer=None,
+    ):
+        """
+        Generate a plain-language LLM explanation for a single prediction from
+        its feature contributions.
+
+        model_interpreter contains no LLM code and does not depend on any LLM
+        library. The explanation is produced by llm_explainer, which can be
+        any object with an ``explain(claim_features, shap_values,
+        predicted_fraud)`` method. If llm_explainer is not given, the default
+        explainer registered by an installed package under the
+        ``model_interpreter.llm_explainers`` entry point group is used.
+
+        Parameters:
+        -----------
+        contributions: list or dict
+            output of transform() for the observation, in any return_type,
+            passed to the explainer as shap_values
+
+        claim_features: dict, pd.Series or single row pd.DataFrame
+            the observation's own (unencoded) fields
+
+        predicted_fraud: int
+            the model's predicted class for the observation, 1 (fraud) or 0
+            (not fraud), e.g. from model.predict
+
+        llm_explainer: object, default = None
+            object with an ``explain(claim_features, shap_values,
+            predicted_fraud)`` method that returns the explanation. If None,
+            the default explainer registered under the
+            ``model_interpreter.llm_explainers`` entry point group is loaded.
+            It is passed per call rather than stored on the interpreter so
+            that a fitted ModelInterpreter stays picklable
+
+        Returns:
+        -----------
+        the return value of llm_explainer.explain, e.g. the explanation text
+
+        Raises:
+        -----------
+        ImportError
+            if llm_explainer is None and no installed package registers a
+            default LLM explainer
+
+        Examples:
+        ---------
+        >>> class EchoExplainer:
+        ...     def explain(self, claim_features, shap_values, predicted_fraud):
+        ...         top = max(shap_values, key=lambda d: abs(d["Value"]))
+        ...         return f"Top factor: {top['Name']}"
+        >>> mi = ModelInterpreter(feature_names=["Age", "Make"])
+        >>> mi.explain_with_llm(
+        ...     [{"Name": "Make", "Value": 0.6}, {"Name": "Age", "Value": -0.1}],
+        ...     claim_features={"Make": "BMW", "Age": 41},
+        ...     predicted_fraud=1,
+        ...     llm_explainer=EchoExplainer(),
+        ... )
+        'Top factor: Make'
+        """
+
+        if llm_explainer is None:
+            llm_explainer = _default_llm_explainer()
+
+        return llm_explainer.explain(
+            claim_features=claim_features,
+            shap_values=contributions,
+            predicted_fraud=predicted_fraud,
+        )

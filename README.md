@@ -73,6 +73,40 @@ Which will then return output like:
 ```
 
 
+## LLM explanations
+
+`ModelInterpreter.explain_with_llm` turns the output of `transform` for one prediction into a plain-language explanation. `model_interpreter` contains no LLM code and has no LLM dependency: you bring your own explainer, which is any object with an `explain(claim_features, shap_values, predicted_fraud)` method.
+
+```python
+class MyExplainer:
+    def explain(self, claim_features, shap_values, predicted_fraud):
+        prompt = f"Explain prediction {predicted_fraud} for {claim_features} given {shap_values}"
+        return my_llm_client(prompt)  # any LLM client or service
+
+
+contribution_list = model_interpreter.transform(single_row, return_type="name_value_dicts")
+
+explanation = model_interpreter.explain_with_llm(
+    contribution_list,
+    claim_features=raw_claim_row,  # the observation's own (unencoded) fields
+    predicted_fraud=int(model.predict(single_row)[0]),
+    llm_explainer=MyExplainer(),
+)
+```
+
+Whatever `explain` returns is returned by `explain_with_llm`, and errors it raises are passed on to the caller. The explainer is passed per call rather than stored on the interpreter, so a fitted `ModelInterpreter` stays picklable.
+
+### Registering a default explainer
+
+A package can make its explainer the default, so `llm_explainer` can be left out, by registering a factory function under the `model_interpreter.llm_explainers` entry point group in its `pyproject.toml`:
+
+```toml
+[project.entry-points."model_interpreter.llm_explainers"]
+default = "my_package:get_explainer"
+```
+
+`get_explainer()` takes no arguments and returns the explainer. When `explain_with_llm` is called without `llm_explainer`, it loads and calls the factory registered as `default`. If none is installed, it raises an `ImportError` asking for an explainer to be passed.
+
 ## Installation
 
 The easiest way to get `model_interpreter` is directly from [pypi](https://pypi.org/project/model_interpreter/) with;

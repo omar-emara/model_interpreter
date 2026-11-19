@@ -19,6 +19,10 @@ Each individual change should have a link to the pull request after the descript
 2.0.0 (unreleased)
 ------------------
 
+Added
+^^^^^
+- Added ``ModelInterpreter.explain_with_llm`` to generate a plain-language LLM explanation of a single prediction from the output of ``transform``. The explanation comes from a user supplied explainer (any object with an ``explain(claim_features, shap_values, predicted_fraud)`` method) or, if none is passed, from the default explainer an installed package registers under the ``model_interpreter.llm_explainers`` entry point group. ``model_interpreter`` itself has no LLM dependency.
+
 Changed
 ^^^^^^^
 - chore: bump minimum python to 310, upgrade black for security fix (need for py310 forced a major version upgrade)
