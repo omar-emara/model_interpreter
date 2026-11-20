@@ -75,7 +75,9 @@ Which will then return output like:
 
 ## LLM explanations
 
-`ModelInterpreter.explain_with_llm` turns the output of `transform` for one prediction into a plain-language explanation. `model_interpreter` contains no LLM code and has no LLM dependency: you bring your own explainer, which is any object with an `explain(claim_features, shap_values, predicted_fraud)` method.
+LLM explanations are optional. `model_interpreter` can be used without an LLM: `fit` and `transform` work exactly as above, and no LLM package or setup is needed unless you call `explain_with_llm`.
+
+`ModelInterpreter.explain_with_llm` turns the output of `transform` for one prediction into a plain-language explanation. `model_interpreter` contains no LLM code and has no LLM dependency: to use this feature, you bring your own explainer, which is any object with an `explain(claim_features, shap_values, predicted_fraud)` method.
 
 ```python
 class MyExplainer:
